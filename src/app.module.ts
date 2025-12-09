@@ -7,12 +7,13 @@ import { TasksModule } from './tasks/tasks.module';
 import { appConfig } from './config/app.config';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { appConfigSchema, ConfigType } from './config/config.types';
-import { abort } from 'process';
 import { typeOrmConfig } from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config/dist/config.service';
 import { TypedConfigService } from './config/typed-config.service';
 import { Task } from './tasks/task.entity';
+import { User } from './users/user.entity';
+import { TaskLabel } from './tasks/task-label.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { Task } from './tasks/task.entity';
       inject: [ConfigService],
       useFactory: (configService: TypedConfigService) => ({
         ...configService.get('database'),
-        entities: [Task],
+        entities: [Task, User, TaskLabel],
       }),
     }),
     ConfigModule.forRoot({
