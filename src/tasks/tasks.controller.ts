@@ -18,14 +18,29 @@ import { UpdateTaskDto } from './update-task.dto';
 import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
 import { Task } from './task.entity';
 import { CreateTaskLabelDto } from './create-task-label.dto';
+import { FindTaskParams } from './find-task.params';
+import { Query } from '@nestjs/common';
+import { PaginationParams } from 'src/common/pagination.params';
+import { PaginationResponse } from 'src/common/pagination.response';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  public async findAll(): Promise<Task[]> {
-    return await this.tasksService.findAll();
+  public async findAll(
+    @Query() filters: FindTaskParams,
+    @Query() pagination: PaginationParams,
+  ): Promise<PaginationResponse<Task>> {
+    const [tasks, count] = await this.tasksService.findAll(filters, pagination);
+    return {
+      data: tasks,
+      meta: {
+        total: count,
+        offset: pagination.offset,
+        limit: pagination.limit,
+      },
+    };
   }
 
   @Get('/:id')
@@ -86,5 +101,15 @@ export class TasksController {
   ): Promise<Task> {
     const task = await this.findOneOrFail(id);
     return await this.tasksService.addLabels(task, label);
+  }
+
+  @Delete(':id/labels')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeLabels(
+    @Param() { id }: FindOneParams,
+    @Body() labelNames: string[],
+  ): Promise<void> {
+    const task = await this.findOneOrFail(id);
+    await this.tasksService.removeLabels(task, labelNames);
   }
 }
