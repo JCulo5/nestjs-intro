@@ -18,6 +18,11 @@ import { LoginResponse } from '../login.response';
 import { AuthRequest } from '../auth.request';
 import { UserService } from '../user/user.service';
 import { AuthGuard } from '../auth.guard';
+import { Public } from '../decorators/public.decorator';
+import { Admin } from 'typeorm';
+import { AdminResponse } from '../admin.response';
+import { Role } from '../role.enum';
+import { Roles } from '../decorators/roles.decoratos';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,11 +34,13 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @Public()
   async register(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.authService.register(createUserDto);
   }
 
   @Post('login')
+  @Public()
   async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
     const accessToken = await this.authService.login(
       loginDto.email,
@@ -52,5 +59,11 @@ export class AuthController {
     }
 
     throw new NotFoundException();
+  }
+
+  @Get('admin')
+  @Roles(Role.ADMIN)
+  async adminOnly(): Promise<AdminResponse> {
+    return new AdminResponse({ message: 'This is for admins only' });
   }
 }
