@@ -31,4 +31,14 @@ describe('PasswordService', () => {
     expect(bcrypt.hash).toHaveBeenCalledWith(password, 10);
     expect(result).toBe(mochHash);
   });
+
+  //verify method test (mocks & spies)
+  it('should verify password', async () => {
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    const plainPassword = 'password123';
+    const hashedPassword = 'hashed_password';
+    const result = await service.verify(plainPassword, hashedPassword);
+    expect(bcrypt.compare).toHaveBeenCalledWith(plainPassword, hashedPassword);
+    expect(result).toBe(true);
+  });
 });
