@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TaskStatus } from './task.model';
 import { CreateTaskDto } from './create-task.dto';
 import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
-import { FindOptionsWhere, Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTaskLabelDto } from './create-task-label.dto';
@@ -24,10 +24,12 @@ export class TasksService {
   public async findAll(
     filters: FindTaskParams,
     pagination: PaginationParams,
+    userId: string,
   ): Promise<[Task[], number]> {
     const query = this.tasksRepository
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.labels', 'label');
+      .leftJoinAndSelect('task.labels', 'label')
+      .where('task.userId = :userId', { userId });
 
     if (filters.status) {
       query.andWhere('task.status=:status', { status: filters.status });
